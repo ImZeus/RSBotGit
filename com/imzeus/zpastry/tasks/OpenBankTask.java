@@ -5,12 +5,12 @@ import java.util.concurrent.Callable;
 import org.powerbot.script.methods.Bank;
 import org.powerbot.script.methods.MethodContext;
 import org.powerbot.script.util.Condition;
+import org.powerbot.script.util.Random;
 import org.powerbot.script.wrappers.Npc;
 
 import com.imzeus.zpastry.zPastry;
 import com.imzeus.zpastry.objects.Task;
 
-@SuppressWarnings("deprecation")
 public class OpenBankTask extends Task {
 
 	//script
@@ -23,28 +23,27 @@ public class OpenBankTask extends Task {
 
 	@Override
 	public boolean activate() {
-		if(ctx.backpack.select().id(script.getFlourPotID()).isEmpty() && (script.getBankArea().contains(ctx.players.local().getLocation()) || ctx.players.local().getLocation().distanceTo(script.getBankArea().getClosestTo(ctx.players.local().getLocation())) < 6) && !ctx.bank.isOpen()) {
-			return true;
-		}
-		return false;
+		return (ctx.backpack.select().id(script.getFlourPotID()).isEmpty() 
+					&& !ctx.bank.isOpen()
+						&& ctx.npcs.select().id(Bank.BANK_NPC_IDS).nearest().poll().getLocation().distanceTo(ctx.players.local().getLocation()) < 10);
 	}
 
 	@Override
 	public void execute() {
 		if(!ctx.npcs.select().id(Bank.BANK_NPC_IDS).isEmpty() && !ctx.bank.isOpen()) {
 			final Npc banker = ctx.npcs.select().id(Bank.BANK_NPC_IDS).nearest().poll();
-			if(!banker.isOnScreen()) {
+			if(!banker.isInViewport()) {
 				script.t("Facing the banker");
-				ctx.movement.stepTowards(banker);
 				ctx.camera.turnTo(banker);
-			} else {
+			} else if(ctx.players.local().isIdle()){
+				script.t("Interacting with banker");
+				banker.interact("Bank");
 				Condition.wait(new Callable<Boolean>() {
 					@Override
 					public Boolean call() throws Exception {
-						script.t("Interacting with banker");
-						return banker.interact("Bank") || ctx.bank.isOpen();
+						return ctx.bank.isOpen();
 					}
-				}, 2000, 2);
+				}, Random.nextInt(500, 1250), 2);
 			}
 		}
 		

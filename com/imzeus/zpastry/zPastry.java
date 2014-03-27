@@ -59,7 +59,7 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 	public void start() {
 		current = "Starting up.";
 		array_exp = ctx.skills.getExperiences();
-		pastries_price = GeItem.getPrice(FLOURPOT_ID);
+		pastries_price = GeItem.getPrice(PASTRY_ID);
 		tasklist.add(new OpenBankTask(ctx, this));
 		tasklist.add(new BankTask(ctx, this));
 		tasklist.add(new MovementTask(ctx, this));
@@ -70,6 +70,7 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 	public int poll() {
 		for(Task task : tasklist) {
 		    if(task.activate()) {
+		    	System.out.println("Runtime:"+ this.getRuntime() + " " + task.getClass().getName());
 		        task.execute();
 		        return 1000;
 		    }
@@ -125,6 +126,10 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 	//methods
 	public void t(String t) {
 		current = t;
+	}
+	
+	public String getCurrent() {
+		return current;
 	}
 	
 	public void addRun() {

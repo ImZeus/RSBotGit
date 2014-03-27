@@ -1,9 +1,6 @@
 package com.imzeus.zpastry.tasks;
 
-import java.util.concurrent.Callable;
-
 import org.powerbot.script.methods.MethodContext;
-import org.powerbot.script.util.Condition;
 
 import com.imzeus.zpastry.zPastry;
 import com.imzeus.zpastry.objects.Task;
@@ -20,33 +17,23 @@ public class MovementTask extends Task {
 
 	@Override
 	public boolean activate() {
-		if(script.getFountainArea().contains(ctx.players.local().getLocation()) && ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
-			return true;
-		} else if(script.getBankArea().contains(ctx.players.local().getLocation()) && !ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
-			return true;
-		} else {
-		}
-		return false;
+		return (script.getFountainArea().contains(ctx.players.local().getLocation()) 
+				&& ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) ||
+					(script.getBankArea().contains(ctx.players.local().getLocation()) 
+						&& !ctx.backpack.select().id(script.getFlourPotID()).isEmpty())
+							&& ctx.players.local().isIdle();
 	}
 
 	@Override
 	public void execute() {
-		if(script.getFountainArea().contains(ctx.players.local().getLocation())) {
+		if(script.getFountainArea().contains(ctx.players.local().getLocation())
+				 && ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
 			script.t("Moving to the bank");
-			Condition.wait(new Callable<Boolean>() {
-				@Override
-				public Boolean call() throws Exception {
-					return script.getWalkPath().reverse().randomize(2, 2).traverse();
-				}
-			}, 5500, 1);
-		} else if(script.getBankArea().contains(ctx.players.local().getLocation())) {
+			script.getWalkPath().reverse().randomize(2, 2).traverse();
+		} else if(script.getBankArea().contains(ctx.players.local().getLocation())
+						&& !ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
 			script.t("Moving to the fountain");
-			Condition.wait(new Callable<Boolean>() {
-				@Override
-				public Boolean call() throws Exception {
-					return script.getWalkPath().randomize(2, 2).traverse();
-				}
-			}, 5500, 1);
+			script.getWalkPath().randomize(2, 2).traverse();
 		}
 	}
 	

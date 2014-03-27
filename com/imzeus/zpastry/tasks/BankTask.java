@@ -1,9 +1,6 @@
 package com.imzeus.zpastry.tasks;
 
-import java.util.concurrent.Callable;
-
 import org.powerbot.script.methods.MethodContext;
-import org.powerbot.script.util.Condition;
 
 import com.imzeus.zpastry.zPastry;
 import com.imzeus.zpastry.objects.Task;
@@ -20,10 +17,8 @@ public class BankTask extends Task {
 
 	@Override
 	public boolean activate() {
-		if(ctx.bank.isOpen() && ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
-			return true;
-		}
-		return false;
+		return (ctx.bank.isOpen() 
+					&& ctx.backpack.select().id(script.getFlourPotID()).isEmpty());
 	}
 
 	@Override
@@ -34,27 +29,16 @@ public class BankTask extends Task {
 			if(!ctx.backpack.select().id(script.getPastryID()).isEmpty()) {
 				script.addRun();
 			}
-			Condition.wait(new Callable<Boolean>() {
-				@Override
-				public Boolean call() throws Exception {
-					return ctx.bank.depositInventory();
-				}
-			}, 1000, 2);
+			ctx.bank.depositInventory();
 		}
-		Condition.wait(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				script.t("Withdrawing 14 pots of flour");
-				return ctx.bank.withdraw(script.getFlourPotID(), 14);
-			}
-		}, 1000, 2);
-		Condition.wait(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				script.t("Closing bank");
-				return ctx.bank.close();
-			}
-		}, 1000, 2);
+		if(ctx.bank.select().id(script.getFlourPotID()).count() == 0) {
+			script.getController().stop();
+		} else {
+			script.t("Withdrawing 14 pots of flour");
+			ctx.bank.withdraw(script.getFlourPotID(), 14);
+		}
+		script.t("Closing bank");
+		ctx.bank.close();
 	}
 
 }
