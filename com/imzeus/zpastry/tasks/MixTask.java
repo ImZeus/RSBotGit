@@ -2,6 +2,7 @@ package com.imzeus.zpastry.tasks;
 
 import java.util.concurrent.Callable;
 
+import org.powerbot.script.methods.Hud;
 import org.powerbot.script.methods.MethodContext;
 import org.powerbot.script.util.Condition;
 import org.powerbot.script.util.Random;
@@ -34,6 +35,23 @@ public class MixTask extends Task {
 	@Override
 	public void execute() {
 		final GameObject fountain = ctx.objects.id(script.getFountainID()).select().within(fountain_debug).nearest().poll();
+		if(!ctx.hud.isOpen(Hud.Window.BACKPACK)) {
+			ctx.hud.open(Hud.Window.BACKPACK);
+			Condition.wait(new Callable<Boolean>() {
+				@Override
+				public Boolean call() throws Exception {
+					return ctx.hud.isOpen(Hud.Window.BACKPACK);
+				}
+			}, Random.nextInt(250,500), 1);
+		} else if(!ctx.hud.isVisible(Hud.Window.BACKPACK)) {
+			ctx.hud.view(Hud.Window.BACKPACK);
+			Condition.wait(new Callable<Boolean>() {
+				@Override
+				public Boolean call() throws Exception {
+					return ctx.hud.isVisible(Hud.Window.BACKPACK);
+				}
+			}, Random.nextInt(250,500), 1);
+		}
 		if(ctx.widgets.get(1370, 20).isVisible()) {
 			script.t("Clicking Make button");
 			ctx.widgets.get(1370, 20).interact("Make");
@@ -43,7 +61,7 @@ public class MixTask extends Task {
 				public Boolean call() throws Exception {
 					return !ctx.widgets.get(1251, 11).isInViewport();
 				}
-			}, Random.nextInt(13000, 15000), 1);
+			}, Random.nextInt(13000, 14000), 1);
 		} else if(!ctx.widgets.get(1370, 20).isVisible() && !ctx.widgets.get(1370, 20).isInViewport()) {
 			if(fountain.isValid() && !fountain.isInViewport()) {
 				script.t("Facing fountain");

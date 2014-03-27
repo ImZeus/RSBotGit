@@ -43,7 +43,7 @@ public class OpenBankTask extends Task {
 					public Boolean call() throws Exception {
 						return ctx.bank.isOpen();
 					}
-				}, Random.nextInt(500, 1250), 2);
+				}, Random.nextInt(750, 1250), 2);
 			}
 		}
 		
