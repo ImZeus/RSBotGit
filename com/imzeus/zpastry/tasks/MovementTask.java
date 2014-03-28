@@ -17,22 +17,25 @@ public class MovementTask extends Task {
 
 	@Override
 	public boolean activate() {
-		return (script.getFountainArea().contains(ctx.players.local().getLocation()) 
+		//added in failsafe to keep it from sticking in between 2 areas
+		return ((script.getFountainArea().contains(ctx.players.local().getLocation()) 
 				&& ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) ||
 					(script.getBankArea().contains(ctx.players.local().getLocation()) 
 						&& !ctx.backpack.select().id(script.getFlourPotID()).isEmpty())
-							&& ctx.players.local().isIdle();
+							|| (!script.getFountainArea().contains(ctx.players.local())
+									&& !script.getBankArea().contains(ctx.players.local())))
+										&& ctx.players.local().isIdle();
 	}
 
 	@Override
 	public void execute() {
-		if(script.getFountainArea().contains(ctx.players.local().getLocation())
-				 && ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
+		if(ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
 			script.t("Moving to the bank");
+			System.out.println("Activated move to bank!");
 			script.getWalkPath().reverse().randomize(2, 2).traverse();
-		} else if(script.getBankArea().contains(ctx.players.local().getLocation())
-						&& !ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
+		} else if(!ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) {
 			script.t("Moving to the fountain");
+			System.out.println("Activated move to fountain!");
 			script.getWalkPath().randomize(2, 2).traverse();
 		}
 	}

@@ -23,6 +23,7 @@ public class OpenBankTask extends Task {
 
 	@Override
 	public boolean activate() {
+		//System.out.println("Distance:"+ctx.npcs.select().id(Bank.BANK_NPC_IDS).nearest().poll().getLocation().distanceTo(ctx.players.local().getLocation()));
 		return (ctx.backpack.select().id(script.getFlourPotID()).isEmpty() 
 					&& !ctx.bank.isOpen()
 						&& ctx.npcs.select().id(Bank.BANK_NPC_IDS).nearest().poll().getLocation().distanceTo(ctx.players.local().getLocation()) < 10);
@@ -35,6 +36,13 @@ public class OpenBankTask extends Task {
 			if(!banker.isInViewport()) {
 				script.t("Facing the banker");
 				ctx.camera.turnTo(banker);
+				if(banker.getLocation().distanceTo(ctx.players.local().getLocation()) < 10) {
+					if(ctx.players.local().isIdle()) {
+						script.t("Stepping to banker as a failsafe");
+						System.out.println("Activated step to banker failsafe!");
+						ctx.movement.stepTowards(banker);
+					}
+				}
 			} else if(ctx.players.local().isIdle()){
 				script.t("Interacting with banker");
 				banker.interact("Bank");
@@ -43,7 +51,7 @@ public class OpenBankTask extends Task {
 					public Boolean call() throws Exception {
 						return ctx.bank.isOpen();
 					}
-				}, Random.nextInt(750, 1250), 2);
+				}, Random.nextInt(1200, 1450), 2);
 			}
 		}
 		

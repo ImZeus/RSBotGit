@@ -52,6 +52,21 @@ public class MixTask extends Task {
 				}
 			}, Random.nextInt(250,500), 1);
 		}
+		//attempted fix for confusion in inventory
+		if(fountain.isValid() && fountain.isInViewport() && ctx.players.local().isIdle()) {
+			script.t("Interacting with pot of flour");
+			ctx.backpack.select().id(script.getFlourPotID()).first().poll().interact("Use");
+			if(ctx.backpack.getSelectedItem().getId() == script.getFlourPotID()) {
+				script.t("Using pot of flour with fountain");
+				fountain.interact("Use");
+				Condition.wait(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						return ctx.widgets.get(1370, 20).isInViewport();
+					}
+				}, Random.nextInt(1650, 2200), 2);
+			}
+		}
 		if(ctx.widgets.get(1370, 20).isVisible()) {
 			script.t("Clicking Make button");
 			ctx.widgets.get(1370, 20).interact("Make");
@@ -59,32 +74,23 @@ public class MixTask extends Task {
 			Condition.wait(new Callable<Boolean>() {
 				@Override
 				public Boolean call() throws Exception {
+					System.out.println("MixDoughBool:"+!ctx.widgets.get(1251, 11).isInViewport());
 					return !ctx.widgets.get(1251, 11).isInViewport();
 				}
-			}, Random.nextInt(13000, 14000), 1);
+			}, Random.nextInt(16000, 18000), 1);
 		} else if(!ctx.widgets.get(1370, 20).isVisible() && !ctx.widgets.get(1370, 20).isInViewport()) {
 			if(fountain.isValid() && !fountain.isInViewport()) {
 				script.t("Facing fountain");
 				ctx.camera.turnTo(fountain);
 				if(fountain.getLocation().distanceTo(ctx.players.local().getLocation()) < 10) {
-					script.t("Stepping to fountain as failsafe");
-					ctx.movement.stepTowards(fountain);
+					if(ctx.players.local().isIdle()) {
+						script.t("Stepping to fountain as failsafe");
+						System.out.println("Activated failsafe step to fountain!");
+						ctx.movement.stepTowards(fountain);
+					}
 				}
 			}
-			if(fountain.isValid() && fountain.isInViewport() && ctx.players.local().isIdle()) {
-				script.t("Interacting with pot of flour");
-				ctx.backpack.select().id(script.getFlourPotID()).first().poll().interact("Use");
-				if(ctx.backpack.getSelectedItem().getId() == script.getFlourPotID()) {
-					script.t("Using pot of flour with fountain");
-					fountain.interact("Use");
-					Condition.wait(new Callable<Boolean>() {
-						@Override
-						public Boolean call() throws Exception {
-							return ctx.widgets.get(1370, 20).isInViewport();
-						}
-					}, Random.nextInt(1750, 2500), 2);
-				}
-			}
+			
 		}
 	}
 }
