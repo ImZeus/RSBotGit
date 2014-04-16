@@ -1,6 +1,6 @@
 package com.imzeus.zpastry.tasks;
 
-import org.powerbot.script.methods.MethodContext;
+import org.powerbot.script.rt6.ClientContext;
 
 import com.imzeus.zpastry.zPastry;
 import com.imzeus.zpastry.objects.Task;
@@ -10,7 +10,7 @@ public class MovementTask extends Task {
 	//script
 	private zPastry script = null;
 	
-	public MovementTask(MethodContext ctx, zPastry script) {
+	public MovementTask(ClientContext ctx, zPastry script) {
 		super(ctx);
 		this.script = script;
 	}
@@ -18,13 +18,13 @@ public class MovementTask extends Task {
 	@Override
 	public boolean activate() {
 		//added in failsafe to keep it from sticking in between 2 areas
-		return ((script.getFountainArea().contains(ctx.players.local().getLocation()) 
+		return ((script.getFountainArea().contains(ctx.players.local().tile()) 
 				&& ctx.backpack.select().id(script.getFlourPotID()).isEmpty()) ||
-					(script.getBankArea().contains(ctx.players.local().getLocation()) 
+					(script.getBankArea().contains(ctx.players.local().tile()) 
 						&& !ctx.backpack.select().id(script.getFlourPotID()).isEmpty())
 							|| (!script.getFountainArea().contains(ctx.players.local())
 									&& !script.getBankArea().contains(ctx.players.local())))
-										&& ctx.players.local().isIdle();
+										&& ctx.players.local().idle();
 	}
 
 	@Override

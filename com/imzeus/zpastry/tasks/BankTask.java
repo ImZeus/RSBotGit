@@ -1,6 +1,6 @@
 package com.imzeus.zpastry.tasks;
 
-import org.powerbot.script.methods.MethodContext;
+import org.powerbot.script.rt6.ClientContext;
 
 import com.imzeus.zpastry.zPastry;
 import com.imzeus.zpastry.objects.Task;
@@ -10,14 +10,14 @@ public class BankTask extends Task {
 	//script object
 	private zPastry script = null;
 
-	public BankTask(MethodContext ctx, zPastry script) {
+	public BankTask(ClientContext ctx, zPastry script) {
 		super(ctx);
 		this.script = script;
 	}
 
 	@Override
 	public boolean activate() {
-		return (ctx.bank.isOpen() 
+		return (ctx.bank.open() 
 					&& ctx.backpack.select().id(script.getFlourPotID()).isEmpty());
 	}
 
@@ -32,7 +32,7 @@ public class BankTask extends Task {
 			ctx.bank.depositInventory();
 		}
 		if(ctx.bank.select().id(script.getFlourPotID()).count() == 0) {
-			script.getController().stop();
+			ctx.controller().stop();
 		} else {
 			script.t("Withdrawing 14 pots of flour");
 			ctx.bank.withdraw(script.getFlourPotID(), 14);

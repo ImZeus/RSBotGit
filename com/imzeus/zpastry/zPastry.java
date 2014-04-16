@@ -5,16 +5,19 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.util.ArrayList;
 
-import org.powerbot.event.MessageEvent;
-import org.powerbot.event.MessageListener;
-import org.powerbot.event.PaintListener;
-import org.powerbot.script.Manifest;
+import org.powerbot.bot.rt6.client.Client;
+import org.powerbot.script.Area;
+import org.powerbot.script.MessageEvent;
+import org.powerbot.script.MessageListener;
+import org.powerbot.script.PaintListener;
 import org.powerbot.script.PollingScript;
-import org.powerbot.script.util.GeItem;
-import org.powerbot.script.wrappers.Area;
-import org.powerbot.script.wrappers.Item;
-import org.powerbot.script.wrappers.Tile;
-import org.powerbot.script.wrappers.TilePath;
+import org.powerbot.script.Random;
+import org.powerbot.script.Script.Manifest;
+import org.powerbot.script.Tile;
+import org.powerbot.script.rt6.ClientContext;
+import org.powerbot.script.rt6.Item;
+import org.powerbot.script.rt6.TilePath;
+import org.powerbot.script.rt6.GeItem;
 
 import com.imzeus.zpastry.objects.Task;
 import com.imzeus.zpastry.tasks.BankTask;
@@ -23,8 +26,8 @@ import com.imzeus.zpastry.tasks.MovementTask;
 import com.imzeus.zpastry.tasks.OpenBankTask;
 
 @SuppressWarnings("all")
-@Manifest(name = "zPastry", authors = "Im_Zeus", description = "Mixes pastry dough from pots of flour for 250k+/hr")
-public class zPastry extends PollingScript implements MessageListener, PaintListener {
+@Manifest(name = "zPastry", description = "Mixes pastry dough from pots of flour for 250k+/hr")
+public class zPastry extends PollingScript<ClientContext> implements MessageListener, PaintListener {
 	
 	//script constants
 	private final Color background = new Color(64, 64, 64, 128);
@@ -47,8 +50,8 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 	
 	//variables
 	private ArrayList<Task> tasklist = new ArrayList<Task>();
-	private int[] array_exp;
 	
+	private int cooking_exp;
 	private int total_exp = 0;
 	private int pastries_made = 0;
 	private int pastries_price = 0;
@@ -58,8 +61,8 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 
 	public void start() {
 		current = "Starting up.";
-		array_exp = ctx.skills.getExperiences();
-		pastries_price = GeItem.getPrice(PASTRY_ID);
+		cooking_exp = ctx.skills.experience(ctx.skills.COOKING);
+		pastries_price = GeItem.price(PASTRY_ID);
 		tasklist.add(new OpenBankTask(ctx, this));
 		tasklist.add(new BankTask(ctx, this));
 		tasklist.add(new MovementTask(ctx, this));
@@ -67,15 +70,13 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 	}
 
 	@Override
-	public int poll() {
+	public void poll() {
 		for(Task task : tasklist) {
 		    if(task.activate()) {
 		    	System.out.println("Runtime:"+ this.getRuntime() + " " + task.getClass().getName());
 		        task.execute();
-		        return 1000;
 		    }
 		}
-		return 1000;
 	}
 	
 	@Override
@@ -98,15 +99,8 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 		g.drawString(("Runtime: " + hours + "h " + minutes +  "m "+seconds+"s"), 10, 15);
 		
 		//calculate exp/hr
-		int temp = 0;
-		int[] mark_exp = ctx.skills.getExperiences();
-		for(int i=0;i<mark_exp.length;i++) {
-			if(mark_exp[i] > array_exp[i]) {
-				temp += mark_exp[i] - array_exp[i];
-			}
-		}
-		total_exp = temp;
-		g.drawString(("Experience: " + (int)((((float) temp)/(float)(seconds + (minutes * 60) + (hours * 60 * 60))*60)*60)) + "xp/hr", 10, 25);
+		total_exp = cooking_exp - ctx.skills.experience(ctx.skills.COOKING);
+		g.drawString(("Experience: " + (int)((((float) ctx.skills.experience(ctx.skills.COOKING))/(float)(seconds + (minutes * 60) + (hours * 60 * 60))*60)*60)) + "xp/hr", 10, 25);
 		g.drawString("Experience: " + (int)(total_exp) + "exp", 10, 35);
 		
 		//calculate gp/hr
@@ -158,12 +152,5 @@ public class zPastry extends PollingScript implements MessageListener, PaintList
 	
 	public int getFountainID() {
 		return FOUNTAIN_ID;
-	}
-
-	public Item getFlourPot() {
-		if(FLOURPOT_ITEM == null) {
-			FLOURPOT_ITEM = new Item(this.ctx, FLOURPOT_ID, 14, ctx.backpack.getComponent());
-		}
-		return FLOURPOT_ITEM;
 	}
 }
